@@ -1,0 +1,178 @@
+.sbb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* Grid Card */
+.sbb-grid-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-white);
+  border: 1px solid var(--bg-border);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  transition: box-shadow 0.2s, transform 0.2s;
+  height: 100%;
+}
+.sbb-grid-card:hover { box-shadow: 0 8px 28px rgba(17,17,17,0.1); transform: translateY(-3px); }
+
+.sbb-gate-badge {
+  position: absolute;
+  top: 0; left: 0;
+  padding: 3px 9px;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: white;
+  border-bottom-right-radius: 8px;
+  z-index: 2;
+}
+.sbb-edition-badge {
+  position: absolute;
+  top: 0; right: 0;
+  padding: 3px 9px;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: var(--bg-secondary-text);
+  background: var(--bg-white);
+  border-bottom-left-radius: 8px;
+  border: 1px solid var(--bg-border);
+  border-top: none; border-right: none;
+  z-index: 2;
+}
+
+.sbb-grid-cover {
+  width: 100%;
+  height: 130px;
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--bg-border);
+}
+.sbb-cover-spine {
+  width: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.35);
+  font-size: 0.6875rem;
+}
+.sbb-cover-pages {
+  flex: 1;
+  padding: 20px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sbb-cover-title-text {
+  font-family: var(--font-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--bg-deep-black);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.25;
+}
+.sbb-cover-author-text { font-size: 0.625rem; color: var(--bg-secondary-text); font-style: italic; }
+.sbb-cover-pub { font-size: 0.5625rem; color: var(--bg-secondary-text); margin-top: auto; }
+.sbb-cover-meta { display: flex; justify-content: space-between; font-size: 0.5625rem; color: var(--bg-secondary-text); }
+
+.sbb-cat-chip {
+  display: inline-block;
+  margin: 10px 10px 0;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.sbb-cat-chip--sm { margin: 0 0 6px; }
+
+.sbb-card-title {
+  padding: 6px 10px 0;
+  font-family: var(--font-serif);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--bg-deep-black);
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sbb-card-author {
+  padding: 2px 10px 0;
+  font-size: 0.6875rem;
+  color: var(--bg-secondary-text);
+  margin: 0;
+}
+.sbb-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px 0;
+  font-size: 0.8125rem;
+}
+.sbb-star { color: var(--bg-warm-orange); font-size: 0.6875rem; }
+.sbb-rating-count { font-size: 0.625rem; color: var(--bg-secondary-text); }
+
+.sbb-avail-row { display: flex; flex-direction: column; gap: 4px; padding: 6px 10px 0; }
+.sbb-avail-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.625rem;
+  color: var(--bg-secondary-text);
+  background: var(--bg-warm-cream);
+  padding: 3px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--bg-border);
+}
+.sbb-avail-chip i { font-size: 0.5625rem; }
+.sbb-avail-chip--digital {
+  color: var(--bg-success);
+  background: rgba(82,122,90,0.07);
+  border-color: rgba(82,122,90,0.25);
+}
+
+.sbb-card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  margin-top: auto;
+}
+.sbb-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 0;
+  border-radius: 7px;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+.sbb-action-btn--read {
+  background: var(--bg-warm-cream);
+  color: var(--bg-primary-text);
+  border: 1px solid var(--bg-border);
+}
+.sbb-action-btn--read:hover { background: var(--bg-pale-peach); border-color: var(--bg-soft-orange); }
+.sbb-action-btn--reserve {
+  background: var(--bg-deep-black);
+  color: white;
+}
+.sbb-action-btn--reserve:hover { background: var(--bg-warm-orange); }

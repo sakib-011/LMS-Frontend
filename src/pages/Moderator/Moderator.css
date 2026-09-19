@@ -1,0 +1,59 @@
+.mod-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mod-table th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.mod-table td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+
+.mod-table tr:hover td {
+  background-color: var(--bg-warm-cream);
+}
+
+.mod-table tr:last-child td {
+  border-bottom: none;
+}
+
+.mod-form-group {
+  margin-bottom: var(--space-4);
+}
+
+.mod-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  color: var(--text-primary);
+}
+
+.mod-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  background-color: var(--bg-white);
+  transition: all 0.2s;
+  color: var(--text-primary);
+}
+
+.mod-input:focus {
+  outline: none;
+  border-color: var(--bg-warm-orange);
+  box-shadow: 0 0 0 3px rgba(242, 140, 40, 0.1);
+}

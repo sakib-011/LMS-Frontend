@@ -1,0 +1,62 @@
+.bg-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  position: relative;
+}
+
+.bg-toggle-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.bg-toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: #d1d5db; /* Grey color for OFF state */
+  border-radius: 24px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.bg-toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white; /* White dot */
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.bg-toggle-input:checked + .bg-toggle-slider {
+  background-color: var(--bg-warm-orange); /* Orange color for ON state */
+}
+
+.bg-toggle-input:checked + .bg-toggle-slider::before {
+  transform: translateX(20px);
+  background-color: white;
+}
+
+.bg-toggle-input:focus-visible + .bg-toggle-slider {
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
+}
+
+.bg-toggle-input:disabled + .bg-toggle-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bg-toggle-label {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+}

@@ -1,0 +1,123 @@
+.bg-about {
+  min-height: 100vh;
+  background-color: var(--bg-warm-cream);
+}
+
+.bg-about-hero {
+  background: var(--bg-deep-black);
+  color: var(--bg-white);
+  padding: var(--space-16) 0;
+  text-align: center;
+}
+
+.bg-about-hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: var(--space-4);
+}
+
+.bg-about-hero p {
+  font-size: 1.25rem;
+  color: var(--bg-border);
+  max-width: 650px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.bg-about-content {
+  padding: var(--space-16) 0;
+}
+
+.bg-about-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--space-12);
+  margin-bottom: var(--space-16);
+}
+
+@media (min-width: 768px) {
+  .bg-about-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.bg-about-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.bg-about-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-4);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.bg-about-card h3 i {
+  color: var(--bg-warm-orange);
+}
+
+.bg-about-card p {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.bg-about-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-6);
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10);
+  text-align: center;
+  margin-bottom: var(--space-16);
+}
+
+@media (min-width: 768px) {
+  .bg-about-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.bg-stat-num {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--bg-warm-orange);
+  margin-bottom: var(--space-2);
+}
+
+.bg-stat-label {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.bg-hiw-cta-box .bg-btn--primary {
+  background-color: var(--bg-warm-orange);
+  color: #ffffff;
+}
+
+.bg-hiw-cta-box .bg-btn--primary:hover:not(:disabled) {
+  background-color: #d1751c;
+}
+
+.bg-hiw-cta-box .bg-btn--outline,
+.bg-hiw-cta-box .btn-outline {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff !important;
+}
+
+.bg-hiw-cta-box .bg-btn--outline:hover:not(:disabled),
+.bg-hiw-cta-box .btn-outline:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+  color: #ffffff !important;
+}
+

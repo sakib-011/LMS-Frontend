@@ -1,0 +1,47 @@
+.bg-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-pale-peach);
+  color: var(--bg-warm-orange);
+  overflow: hidden;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Sizes */
+.bg-avatar--sm {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.875rem;
+}
+
+.bg-avatar--md {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1rem;
+}
+
+.bg-avatar--lg {
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1.25rem;
+}
+
+.bg-avatar--xl {
+  width: 5rem;
+  height: 5rem;
+  font-size: 1.75rem;
+}
+
+.bg-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bg-avatar-fallback {
+  text-transform: uppercase;
+}

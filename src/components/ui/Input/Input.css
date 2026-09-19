@@ -1,0 +1,66 @@
+.bg-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.bg-input-label {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--bg-primary-text);
+}
+
+.bg-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bg-input-icon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--bg-secondary-text);
+  font-size: 0.875rem;
+}
+
+.bg-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--bg-primary-text);
+  background-color: var(--bg-white);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+}
+
+.bg-input--with-icon {
+  padding-left: 2.25rem;
+}
+
+.bg-input:focus {
+  border-color: var(--bg-warm-orange);
+  box-shadow: 0 0 0 2px var(--bg-pale-peach);
+}
+
+.bg-input:disabled {
+  background-color: var(--bg-warm-cream);
+  color: var(--bg-secondary-text);
+  cursor: not-allowed;
+}
+
+.bg-input--error {
+  border-color: var(--bg-error);
+}
+.bg-input--error:focus {
+  box-shadow: 0 0 0 2px rgba(201, 92, 84, 0.2);
+}
+
+.bg-input-error-message {
+  font-size: 0.75rem;
+  color: var(--bg-error);
+  margin-top: 0.25rem;
+}

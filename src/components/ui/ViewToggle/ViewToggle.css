@@ -1,0 +1,35 @@
+.vt-wrap {
+  display: flex;
+  border: 1px solid var(--bg-border);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.vt-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-white);
+  border: none;
+  font-size: 0.875rem;
+  color: var(--bg-secondary-text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.vt-btn + .vt-btn {
+  border-left: 1px solid var(--bg-border);
+}
+
+.vt-btn--active {
+  background: var(--bg-deep-black);
+  color: white;
+}
+
+.vt-btn:not(.vt-btn--active):hover {
+  background: var(--bg-warm-cream);
+  color: var(--bg-warm-orange);
+}

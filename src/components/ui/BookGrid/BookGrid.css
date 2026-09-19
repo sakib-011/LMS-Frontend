@@ -1,0 +1,28 @@
+.bg-bookgrid {
+  display: grid;
+  gap: var(--space-6);
+  width: 100%;
+}
+
+/* Base mobile: 1 or 2 columns depending on screen size */
+@media (max-width: 639px) {
+  .bg-bookgrid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-4);
+  }
+}
+
+/* Tablet */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .bg-bookgrid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+/* Desktop variations based on prop */
+@media (min-width: 1024px) {
+  .bg-bookgrid--cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .bg-bookgrid--cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .bg-bookgrid--cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .bg-bookgrid--cols-5 { grid-template-columns: repeat(5, 1fr); }
+}

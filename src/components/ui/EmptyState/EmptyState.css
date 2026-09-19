@@ -1,0 +1,46 @@
+.bg-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  background-color: var(--bg-white);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--bg-border);
+}
+
+.bg-empty-state-icon-wrapper {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-pale-peach);
+  color: var(--bg-warm-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-6);
+}
+
+.bg-empty-state-icon {
+  font-size: 2rem;
+}
+
+.bg-empty-state-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--bg-deep-black);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.bg-empty-state-desc {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--bg-secondary-text);
+  max-width: 400px;
+  margin: 0 0 var(--space-6) 0;
+}
+
+.bg-empty-state-action {
+  margin-top: var(--space-2);
+}

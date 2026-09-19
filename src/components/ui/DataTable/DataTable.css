@@ -1,0 +1,57 @@
+.bg-datatable-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background-color: var(--bg-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--bg-border);
+}
+
+.bg-datatable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-family: var(--font-sans);
+}
+
+.bg-datatable-th {
+  padding: var(--space-4) var(--space-4);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bg-secondary-text);
+  border-bottom: 2px solid var(--bg-border);
+  background-color: var(--bg-warm-cream);
+}
+
+.bg-datatable-td {
+  padding: var(--space-4) var(--space-4);
+  font-size: 0.875rem;
+  color: var(--bg-primary-text);
+  border-bottom: 1px solid var(--bg-border);
+  vertical-align: middle;
+}
+
+.bg-datatable tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.bg-datatable-tr--clickable {
+  cursor: pointer;
+}
+
+.bg-datatable-tr--clickable:hover {
+  background-color: var(--bg-warm-cream);
+}
+
+.bg-datatable tbody tr:last-child .bg-datatable-td {
+  border-bottom: none;
+}
+
+.bg-datatable-empty {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--bg-secondary-text);
+  font-style: italic;
+}

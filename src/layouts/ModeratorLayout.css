@@ -1,0 +1,257 @@
+/* =========================================
+   MODERATOR LAYOUT (Unified BookGrid Theme)
+   ========================================= */
+
+.mod-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-warm-cream);
+  overflow: hidden;
+}
+
+/* Sidebar */
+.mod-sidebar {
+  width: 280px;
+  background-color: var(--bg-white);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+  flex-shrink: 0;
+  z-index: 50;
+  border-right: 1px solid var(--border-color);
+}
+
+.mod-sidebar-closed {
+  width: 80px;
+}
+
+.mod-sidebar-header {
+  height: 70px;
+  padding: 0 var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mod-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.mod-toggle-btn:hover {
+  background: var(--bg-pale-peach);
+  color: var(--bg-warm-orange);
+}
+
+.mod-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mod-nav-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  margin: var(--space-4) 0 var(--space-2);
+  padding: 0 var(--space-3);
+  text-transform: uppercase;
+}
+
+.mod-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.mod-nav-link i {
+  width: 20px;
+  text-align: center;
+  font-size: 1.125rem;
+}
+
+.mod-nav-link:hover {
+  background: var(--bg-pale-peach);
+  color: var(--text-primary);
+}
+
+.mod-nav-link.active {
+  background: var(--bg-warm-orange);
+  color: var(--bg-white);
+}
+
+.mod-sidebar-closed .mod-nav-link {
+  justify-content: center;
+  padding: var(--space-3) 0;
+}
+
+.mod-sidebar-footer {
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-color);
+}
+
+/* Main Content Area */
+.mod-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Topbar */
+.mod-topbar {
+  height: 70px;
+  background-color: var(--bg-white);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-8);
+  flex-shrink: 0;
+}
+
+.mod-topbar-search {
+  position: relative;
+  width: 400px;
+}
+
+.mod-topbar-search i {
+  position: absolute;
+  left: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+
+.mod-topbar-search input {
+  width: 100%;
+  padding: 10px 10px 10px 40px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  background-color: var(--bg-warm-cream);
+  transition: all 0.2s;
+}
+
+.mod-topbar-search input:focus {
+  outline: none;
+  border-color: var(--bg-warm-orange);
+  background-color: var(--bg-white);
+  box-shadow: 0 0 0 4px rgba(242, 140, 40, 0.1);
+}
+
+.mod-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.mod-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.mod-icon-btn:hover {
+  background: var(--bg-pale-peach);
+  color: var(--bg-warm-orange);
+}
+
+.mod-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--status-error);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--bg-white);
+}
+
+.mod-profile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.mod-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-warm-orange);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+/* Page Wrapper */
+.mod-page-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-8);
+}
+
+/* Generic Mod Card */
+.mod-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.mod-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.mod-card-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
