@@ -1,15 +1,15 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 // The base URL will come from environment variables.
-// Fallback to localhost:8080 for local Spring Boot development
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9292/api/v1';
+// Fallback to live Render production backend URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://lms-backend-v0d3.onrender.com/api/v1';
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 120000, // 120 seconds to handle Render free-tier cold starts
 });
 
 // Request Interceptor: Attach JWT Token
