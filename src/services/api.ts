@@ -8,7 +8,13 @@ const DEFAULT_URL = import.meta.env.DEV
   ? 'http://localhost:9292/api/v1'
   : 'https://lms-backend-ggmm.onrender.com/api/v1';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || DEFAULT_URL;
+let rawUrl = (import.meta.env.VITE_API_BASE_URL || DEFAULT_URL).trim();
+// Automatically sanitize and ensure /api/v1 prefix exists to prevent 404 errors
+if (!rawUrl.includes('/api/v1')) {
+  rawUrl = rawUrl.replace(/\/+$/, '') + '/api/v1';
+}
+
+const API_BASE_URL = rawUrl;
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
