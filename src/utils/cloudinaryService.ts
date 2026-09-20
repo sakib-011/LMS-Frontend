@@ -7,7 +7,7 @@ export interface CloudinaryUploadResponse {
   public_id: string;
 }
 
-// Configurable Environment Variables (Unsigned Upload Preset only - NO API SECRET)
+// Configurable Environment Variables with sensible local defaults
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'ibyawnn0';
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'bookgrid_preset';
 
