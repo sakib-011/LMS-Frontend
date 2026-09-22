@@ -66,7 +66,7 @@ export const AdminAnalytics: React.FC = () => {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+      <div className="admin-dashboard-charts">
         {/* Borrowing Volume (Area) */}
         <div className="admin-card" style={{ marginBottom: 0 }}>
           <h2 style={{ fontSize: '1.125rem', marginBottom: 'var(--space-6)', color: 'var(--text-primary)' }}>Daily Borrowing Volume</h2>
@@ -112,7 +112,7 @@ export const AdminAnalytics: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+      <div className="admin-dashboard-charts">
         {/* Popular Categories (Bar) */}
         <div className="admin-card" style={{ marginBottom: 0 }}>
           <h2 style={{ fontSize: '1.125rem', marginBottom: 'var(--space-6)', color: 'var(--text-primary)' }}>Top Categories by Demand</h2>

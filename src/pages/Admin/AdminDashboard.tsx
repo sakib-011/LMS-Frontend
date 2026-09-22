@@ -97,7 +97,7 @@ export const AdminDashboard: React.FC = () => {
         </Link>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+      <div className="admin-dashboard-charts">
         {/* Borrowing Trends Chart */}
         <div className="admin-card" style={{ marginBottom: 0 }}>
           <h2 style={{ fontSize: '1.125rem', marginBottom: 'var(--space-6)', color: '#1e1b4b' }}>Borrowing Trends (Last 7 Days)</h2>

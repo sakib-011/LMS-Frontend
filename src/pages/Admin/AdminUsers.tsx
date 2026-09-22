@@ -105,7 +105,7 @@ export const AdminUsers: React.FC = () => {
       </div>
 
       <div className="admin-card">
-        <div style={{ display: 'flex', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+        <div className="admin-header-actions" style={{ marginBottom: 'var(--space-6)', width: '100%' }}>
           <div style={{ position: 'relative', flex: 1 }}>
             <i className="fas fa-search" style={{ position: 'absolute', left: 12, top: 10, color: 'var(--bg-secondary-text)' }}></i>
             <input 

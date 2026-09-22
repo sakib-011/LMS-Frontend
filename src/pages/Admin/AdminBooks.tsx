@@ -233,7 +233,7 @@ export const AdminBooks: React.FC = () => {
           <h1 className="admin-title">Book Catalog</h1>
           <p className="admin-subtitle">Manage physical and digital books with Cloudinary direct image storage.</p>
         </div>
-        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+        <div className="admin-header-actions">
           <div className="admin-search">
             <i className="fas fa-search"></i>
             <input 

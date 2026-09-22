@@ -38,7 +38,7 @@ export const AdminReports: React.FC = () => {
           <h1 className="admin-title">System Reports & Analytics</h1>
           <p className="admin-subtitle">Comprehensive data analysis, circulation trends, and financial reports.</p>
         </div>
-        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+        <div className="admin-header-actions">
           <select 
             value={dateRange} 
             onChange={(e) => setDateRange(e.target.value)}
@@ -56,7 +56,7 @@ export const AdminReports: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="admin-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: 'var(--space-6)' }}>
+      <div className="admin-grid">
         <div className="admin-stat-card">
           <div className="admin-stat-icon" style={{ background: 'var(--bg-pale-peach)', color: 'var(--bg-warm-orange)' }}>
             <i className="fas fa-book-reader"></i>
@@ -95,7 +95,7 @@ export const AdminReports: React.FC = () => {
         </div>
       </div>
 
-      <div className="admin-grid" style={{ gridTemplateColumns: '2fr 1fr' }}>
+      <div className="admin-dashboard-charts">
         {/* Circulation Trends */}
         <div className="admin-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>

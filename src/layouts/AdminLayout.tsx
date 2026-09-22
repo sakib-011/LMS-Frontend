@@ -5,6 +5,7 @@ import './AdminLayout.css';
 
 export const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<'mail' | 'notifications' | 'profile' | null>(null);
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -17,6 +18,10 @@ export const AdminLayout: React.FC = () => {
   const handleSignOut = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleNavClick = () => {
+    setMobileOpen(false);
   };
 
   const displayName = user?.name || 'Administrator';
@@ -73,31 +78,41 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="admin-layout">
+      {/* Mobile Backdrop Overlay */}
+      <div 
+        className={`admin-overlay ${mobileOpen ? 'active' : ''}`}
+        onClick={() => setMobileOpen(false)}
+      />
+
       {/* Sidebar */}
-      <div className={`admin-sidebar ${sidebarOpen ? '' : 'admin-sidebar-closed'}`}>
+      <div className={`admin-sidebar ${sidebarOpen ? '' : 'admin-sidebar-closed'} ${mobileOpen ? 'admin-sidebar-mobile-open' : ''}`}>
         <div className="admin-sidebar-header">
-          <Link to="/" style={{ textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Link to="/" onClick={handleNavClick} style={{ textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div className="admin-logo-mark">BG</div>
-            {sidebarOpen && <span style={{ fontWeight: 700, fontSize: '1.25rem' }}>AdminPanel</span>}
+            {(sidebarOpen || mobileOpen) && <span style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)' }}>AdminPanel</span>}
           </Link>
-          <button className="admin-toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <button className="admin-toggle-btn desktop-only" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <i className={`fas fa-chevron-${sidebarOpen ? 'left' : 'right'}`}></i>
+          </button>
+          <button className="admin-toggle-btn mobile-close-btn" onClick={() => setMobileOpen(false)}>
+            <i className="fas fa-times"></i>
           </button>
         </div>
 
         <nav className="admin-nav">
           {MENU_GROUPS.map((group, i) => (
             <div key={i} className="admin-nav-group">
-              <p className="admin-nav-label" style={{ opacity: sidebarOpen ? 1 : 0 }}>{group.title}</p>
+              <p className="admin-nav-label" style={{ opacity: (sidebarOpen || mobileOpen) ? 1 : 0 }}>{group.title}</p>
               {group.items.map(item => (
                 <Link 
                   key={item.path} 
                   to={item.path} 
+                  onClick={handleNavClick}
                   className={`admin-nav-link ${location.pathname === item.path ? 'active' : ''}`}
-                  title={!sidebarOpen ? item.label : undefined}
+                  title={(!sidebarOpen && !mobileOpen) ? item.label : undefined}
                 >
                   <i className={item.icon}></i>
-                  {sidebarOpen && <span>{item.label}</span>}
+                  {(sidebarOpen || mobileOpen) && <span>{item.label}</span>}
                 </Link>
               ))}
             </div>
@@ -105,9 +120,9 @@ export const AdminLayout: React.FC = () => {
         </nav>
         
         <div className="admin-sidebar-footer">
-          <button onClick={handleSignOut} className="admin-nav-link" style={{ color: 'var(--bg-error)', background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
+          <button onClick={handleSignOut} className="admin-nav-link" style={{ color: 'var(--status-error)', background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
             <i className="fas fa-sign-out-alt"></i>
-            {sidebarOpen && <span>Logout</span>}
+            {(sidebarOpen || mobileOpen) && <span>Logout</span>}
           </button>
         </div>
       </div>
@@ -115,10 +130,16 @@ export const AdminLayout: React.FC = () => {
       <div className="admin-main-content">
         {/* Topbar */}
         <header className="admin-topbar">
-          <div className="admin-topbar-search">
-            <i className="fas fa-search"></i>
-            <input type="text" placeholder="Global system search..." />
+          <div className="admin-topbar-left">
+            <button className="admin-mobile-toggle-btn" onClick={() => setMobileOpen(true)} aria-label="Open Menu">
+              <i className="fas fa-bars"></i>
+            </button>
+            <div className="admin-topbar-search">
+              <i className="fas fa-search"></i>
+              <input type="text" placeholder="Global system search..." />
+            </div>
           </div>
+
           <div className="admin-topbar-actions">
             <div style={{ position: 'relative' }}>
               <button className="admin-icon-btn" onClick={() => toggleDropdown('mail')}>
@@ -149,7 +170,7 @@ export const AdminLayout: React.FC = () => {
             
             <div style={{ position: 'relative' }}>
               <div className="admin-profile" onClick={() => toggleDropdown('profile')}>
-                <div style={{ textAlign: 'right' }}>
+                <div className="admin-profile-text" style={{ textAlign: 'right' }}>
                   <p style={{ margin: 0, fontWeight: 600, fontSize: '0.875rem' }}>{displayName}</p>
                   <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{displayRole}</p>
                 </div>

@@ -5,6 +5,7 @@ import './ModeratorLayout.css';
 
 export const ModeratorLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<'mail' | 'notifications' | 'profile' | null>(null);
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -17,6 +18,10 @@ export const ModeratorLayout: React.FC = () => {
   const handleSignOut = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleNavClick = () => {
+    setMobileOpen(false);
   };
 
   const displayName = user?.name || 'Moderator Staff';
@@ -39,39 +44,49 @@ export const ModeratorLayout: React.FC = () => {
 
   return (
     <div className="mod-layout">
+      {/* Mobile Backdrop Overlay */}
+      <div 
+        className={`mod-overlay ${mobileOpen ? 'active' : ''}`}
+        onClick={() => setMobileOpen(false)}
+      />
+
       {/* Sidebar */}
-      <div className={`mod-sidebar ${sidebarOpen ? '' : 'mod-sidebar-closed'}`}>
+      <div className={`mod-sidebar ${sidebarOpen ? '' : 'mod-sidebar-closed'} ${mobileOpen ? 'mod-sidebar-mobile-open' : ''}`}>
         <div className="mod-sidebar-header">
-          <Link to="/" style={{ textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ background: 'var(--bg-accent-blue)', color: 'white', width: 32, height: 32, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+          <Link to="/" onClick={handleNavClick} style={{ textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ background: 'var(--bg-warm-orange)', color: 'white', width: 32, height: 32, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
               BG
             </div>
-            {sidebarOpen && <span style={{ fontWeight: 700, fontSize: '1.25rem' }}>BookGrid</span>}
+            {(sidebarOpen || mobileOpen) && <span style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)' }}>BookGrid</span>}
           </Link>
-          <button className="mod-toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <button className="mod-toggle-btn desktop-only" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <i className={`fas fa-chevron-${sidebarOpen ? 'left' : 'right'}`}></i>
+          </button>
+          <button className="mod-toggle-btn mobile-close-btn" onClick={() => setMobileOpen(false)}>
+            <i className="fas fa-times"></i>
           </button>
         </div>
 
         <nav className="mod-nav">
-          <p className="mod-nav-label">{sidebarOpen ? 'MODERATOR PANEL' : 'MOD'}</p>
+          <p className="mod-nav-label">{(sidebarOpen || mobileOpen) ? 'MODERATOR PANEL' : 'MOD'}</p>
           {MENU_ITEMS.filter(item => item.permission).map(item => (
             <Link 
               key={item.path} 
               to={item.path} 
+              onClick={handleNavClick}
               className={`mod-nav-link ${location.pathname === item.path ? 'active' : ''}`}
-              title={!sidebarOpen ? item.label : undefined}
+              title={(!sidebarOpen && !mobileOpen) ? item.label : undefined}
             >
               <i className={item.icon}></i>
-              {sidebarOpen && <span>{item.label}</span>}
+              {(sidebarOpen || mobileOpen) && <span>{item.label}</span>}
             </Link>
           ))}
         </nav>
         
         <div className="mod-sidebar-footer">
-          <button onClick={handleSignOut} className="mod-nav-link" style={{ color: 'var(--bg-error)', background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
+          <button onClick={handleSignOut} className="mod-nav-link" style={{ color: 'var(--status-error)', background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}>
             <i className="fas fa-sign-out-alt"></i>
-            {sidebarOpen && <span>Logout</span>}
+            {(sidebarOpen || mobileOpen) && <span>Logout</span>}
           </button>
         </div>
       </div>
@@ -79,10 +94,16 @@ export const ModeratorLayout: React.FC = () => {
       <div className="mod-main-content">
         {/* Topbar */}
         <header className="mod-topbar">
-          <div className="mod-topbar-search">
-            <i className="fas fa-search"></i>
-            <input type="text" placeholder="Global search (books, users, barcodes)..." />
+          <div className="mod-topbar-left">
+            <button className="mod-mobile-toggle-btn" onClick={() => setMobileOpen(true)} aria-label="Open Menu">
+              <i className="fas fa-bars"></i>
+            </button>
+            <div className="mod-topbar-search">
+              <i className="fas fa-search"></i>
+              <input type="text" placeholder="Global search (books, users, barcodes)..." />
+            </div>
           </div>
+
           <div className="mod-topbar-actions">
             <div style={{ position: 'relative' }}>
               <button className="mod-icon-btn" onClick={() => toggleDropdown('mail')}>
@@ -112,7 +133,7 @@ export const ModeratorLayout: React.FC = () => {
 
             <div style={{ position: 'relative' }}>
               <div className="mod-profile" onClick={() => toggleDropdown('profile')}>
-                <div style={{ textAlign: 'right' }}>
+                <div className="mod-profile-text" style={{ textAlign: 'right' }}>
                   <p style={{ margin: 0, fontWeight: 600, fontSize: '0.875rem' }}>{displayName}</p>
                   <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{displayRole}</p>
                 </div>
