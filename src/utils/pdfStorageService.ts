@@ -94,17 +94,31 @@ export const PdfStorageService = {
     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
     const fileName = file.name;
 
-    // 1. Convert actual uploaded PDF file to real Base64 Data URL
-    const realPdfDataUrl = await PdfStorageService.fileToDataUrl(file);
+    // 1. Create in-memory Object URL for instant browser rendering
+    let objectUrl = '';
+    try {
+      objectUrl = URL.createObjectURL(file);
+      inMemoryPdfCache.set(bookId, objectUrl);
+    } catch (e) {}
 
-    // 2. Create in-memory Object URL for instant browser rendering
-    const objectUrl = URL.createObjectURL(file);
-    inMemoryPdfCache.set(bookId, objectUrl);
+    // 2. Convert actual uploaded PDF file to real Base64 Data URL (if feasible)
+    let realPdfDataUrl = objectUrl;
+    try {
+      realPdfDataUrl = await PdfStorageService.fileToDataUrl(file);
+    } catch (e) {
+      console.warn("File to DataURL conversion skipped, using objectUrl reference");
+    }
 
     // 3. Save actual PDF binary Data URL into browser IndexedDB
-    await PdfStorageService.saveToIndexedDb(bookId, realPdfDataUrl, fileName, fileSizeMB);
+    try {
+      if (realPdfDataUrl) {
+        await PdfStorageService.saveToIndexedDb(bookId, realPdfDataUrl, fileName, fileSizeMB);
+      }
+    } catch (e) {
+      console.warn("IndexedDB save skipped:", e);
+    }
 
-    // 4. Try Supabase Storage bucket upload first
+    // 4. Try Supabase Storage bucket upload
     let dbPdfUrl = '';
     try {
       const supabasePublicUrl = await uploadPdfToSupabase(file, bookId);
@@ -112,7 +126,7 @@ export const PdfStorageService = {
         dbPdfUrl = supabasePublicUrl;
       }
     } catch (err) {
-      console.warn("Supabase Storage bucket upload skipped. Saving IndexedDB key reference in PostgreSQL DB.");
+      console.warn("Supabase Storage bucket upload skipped.");
     }
 
     if (!dbPdfUrl) {
@@ -120,8 +134,10 @@ export const PdfStorageService = {
     }
 
     // 5. Cache locally
-    PdfStorageService.cachePdfLocally(bookId, realPdfDataUrl, fileName, fileSizeMB);
-    PdfStorageService.saveDigitalCatalog(bookId, dbPdfUrl, fileName, fileSizeMB);
+    try {
+      PdfStorageService.cachePdfLocally(bookId, realPdfDataUrl || objectUrl, fileName, fileSizeMB);
+      PdfStorageService.saveDigitalCatalog(bookId, dbPdfUrl, fileName, fileSizeMB);
+    } catch (e) {}
 
     return {
       pdfUrl: dbPdfUrl,

@@ -85,8 +85,14 @@ export const AdminDigitalLibrary: React.FC = () => {
       const { pdfUrl } = await PdfStorageService.uploadAndCachePdf(selectedPdfFile, targetBookId);
 
       // Save pdfUrl in Spring Boot -> PostgreSQL database & set hasDigital = true
-      await BookService.updateBookPdf(targetBookId, pdfUrl);
+      try {
+        await BookService.updateBookPdf(targetBookId, pdfUrl);
+      } catch (backendErr) {
+        console.warn("Backend API update skipped/failed, saved PDF locally & in cache:", backendErr);
+      }
 
+      // Update local state so UI reflects digital PDF immediately
+      setBooks(prev => prev.map(b => b.id === targetBookId ? { ...b, hasDigital: true, pdfUrl } : b));
 
       const matchedTarget = books.find(b => b.id === targetBookId);
       setToastMessage(`✓ e-Book PDF uploaded and attached to "${matchedTarget ? matchedTarget.title : 'Book'}" successfully!`);

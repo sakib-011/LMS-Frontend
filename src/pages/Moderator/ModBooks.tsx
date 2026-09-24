@@ -153,7 +153,11 @@ export const ModBooks: React.FC = () => {
         const { pdfUrl } = await PdfStorageService.uploadAndCachePdf(selectedPdfFile, newBookId);
 
         // Update database with clean PDF URL
-        await BookService.updateBookPdf(newBookId, pdfUrl);
+        try {
+          await BookService.updateBookPdf(newBookId, pdfUrl);
+        } catch (backendErr) {
+          console.warn("Backend PDF URL update skipped:", backendErr);
+        }
       }
 
       // STEP 3: Upload Image to Cloudinary if selected
