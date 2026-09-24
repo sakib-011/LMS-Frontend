@@ -13,6 +13,7 @@ export interface Book {
   ratingCount: number;
   coverColor?: string;
   imageUrl?: string;
+  pdfUrl?: string;
   cloudinaryPublicId?: string;
   physicalCopies: number;
   physicalAvailable: number;
@@ -65,6 +66,17 @@ export const BookService = {
     const response = await apiClient.patch<CreateBookResponse>(`/books/${bookId}/image`, {
       imageUrl,
       cloudinaryPublicId
+    });
+    return response.data;
+  },
+
+  // Update Database With e-Book PDF URL
+  updateBookPdf: async (
+    bookId: string,
+    pdfUrl: string
+  ): Promise<CreateBookResponse> => {
+    const response = await apiClient.patch<CreateBookResponse>(`/books/${bookId}/pdf`, {
+      pdfUrl
     });
     return response.data;
   },

@@ -2,9 +2,12 @@ import { apiClient } from './api';
 
 export interface User {
   id: string;
+  studentId?: string;
   name: string;
   email: string;
   role: 'STUDENT' | 'MODERATOR' | 'ADMINISTRATOR' | 'Student' | 'Moderator' | 'Administrator';
+  department?: string;
+  phone?: string;
   avatar?: string;
 }
 

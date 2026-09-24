@@ -1,35 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Toggle } from '../../components/ui';
+import { SettingsStorageService, SystemSettings } from '../../utils/settingsStorageService';
 import './Admin.css';
 
 export const AdminSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('general');
-  const [settings, setSettings] = useState({
-    libraryName: 'BookGrid Central Library',
-    contactEmail: 'admin@bookgrid.com',
-    supportPhone: '+1 (555) 123-4567',
-    address: '123 Library Way, Knowledge City',
-    currency: 'USD ($)',
-    timezone: 'UTC -05:00 Eastern Time',
-    language: 'English (US)',
-    allowPublicRegistration: true,
-    maxBooksPerUser: '5',
-    maxReservationDays: '3',
-    finePerDay: '0.50'
-  });
+  const [settings, setSettings] = useState<SystemSettings>(SettingsStorageService.getSettings());
+  const [notification, setNotification] = useState<string | null>(null);
 
-  const handleChange = (field: string, value: any) => {
-    setSettings({ ...settings, [field]: value });
+  useEffect(() => {
+    setSettings(SettingsStorageService.getSettings());
+  }, []);
+
+  const showNotification = (msg: string) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  const handleChange = (field: keyof SystemSettings, value: any) => {
+    setSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveAll = () => {
+    SettingsStorageService.saveSettings(settings);
+    showNotification('✓ System preferences & library policies saved successfully!');
   };
 
   return (
     <div>
+      {/* Toast Notification */}
+      {notification && (
+        <div style={{
+          position: 'fixed', top: '20px', right: '20px', zIndex: 9999,
+          background: '#10b981', color: 'white', padding: '12px 20px',
+          borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600
+        }}>
+          <i className="fas fa-check-circle"></i> {notification}
+        </div>
+      )}
+
       <div className="admin-header">
         <div>
           <h1 className="admin-title">System Settings</h1>
-          <p className="admin-subtitle">Configure global platform preferences, library policies, and localization.</p>
+          <p className="admin-subtitle">Configure global platform preferences, library policies, SMTP email, and localization.</p>
         </div>
-        <Button variant="primary">
+        <Button variant="primary" onClick={handleSaveAll}>
           <i className="fas fa-save" style={{ marginRight: '8px' }}></i> Save All Changes
         </Button>
       </div>
@@ -193,12 +209,48 @@ export const AdminSettings: React.FC = () => {
               </div>
             </div>
           )}
-          
-          {(activeTab === 'email' || activeTab === 'integrations') && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', color: 'var(--text-secondary)', textAlign: 'center' }}>
-              <i className={`fas fa-${activeTab === 'email' ? 'envelope-open-text' : 'code-branch'} fa-3x`} style={{ marginBottom: '16px', opacity: 0.5 }}></i>
-              <h3 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)' }}>{activeTab === 'email' ? 'SMTP Configuration' : 'Third-Party Integrations'}</h3>
-              <p style={{ margin: 0, maxWidth: '400px' }}>This module requires backend configuration variables to be provided before it can be managed via the UI.</p>
+
+          {activeTab === 'email' && (
+            <div>
+              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.25rem', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>Email & SMTP Preferences</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '6px' }}>SMTP Host</label>
+                    <input type="text" value={settings.smtpServer || 'smtp.bookgrid.edu'} onChange={(e) => handleChange('smtpServer', e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '6px' }}>SMTP Port</label>
+                    <input type="text" value={settings.smtpPort || '587'} onChange={(e) => handleChange('smtpPort', e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }} />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.875rem', marginBottom: '6px' }}>Notification Sender Address</label>
+                  <input type="email" value={settings.smtpUser || 'notifications@bookgrid.edu'} onChange={(e) => handleChange('smtpUser', e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'integrations' && (
+            <div>
+              <h3 style={{ margin: '0 0 24px 0', fontSize: '1.25rem', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>Third-Party System Integrations</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9375rem', fontWeight: 700 }}>Google Workspace Single Sign-On (SSO)</h4>
+                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Allow university students and staff to sign in using institutional Google OAuth.</p>
+                  </div>
+                  <Toggle checked={true} label="" />
+                </div>
+                <div style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9375rem', fontWeight: 700 }}>Stripe Payment Gateway</h4>
+                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Process online student fine payments via credit card or digital wallets.</p>
+                  </div>
+                  <Toggle checked={true} label="" />
+                </div>
+              </div>
             </div>
           )}
 

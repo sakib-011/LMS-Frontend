@@ -158,6 +158,7 @@ function App() {
             </Route>
           </Route>
 
+          <Route path="/reader/:id" element={<EReader />} />
           <Route path="/showcase" element={<Showcase />} />
         </Routes>
       </BrowserRouter>

@@ -3,9 +3,10 @@ import { Button, Badge, Modal, Input, ConfirmationDialog } from '../../component
 import { BookService, Book } from '../../services/bookService';
 import { validateImage } from '../../utils/imageValidation';
 import { uploadImageToCloudinary } from '../../utils/cloudinaryService';
+import { PdfStorageService } from '../../utils/pdfStorageService';
 import './Admin.css';
 
-type ProcessState = 'idle' | 'validating' | 'saving-book' | 'uploading-image' | 'updating-image-url' | 'success' | 'error';
+type ProcessState = 'idle' | 'validating' | 'saving-book' | 'uploading-image' | 'uploading-pdf' | 'updating-image-url' | 'success' | 'error';
 
 export const AdminBooks: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
@@ -14,7 +15,7 @@ export const AdminBooks: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState('All');
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [confirmDialog, setConfirmDialog] = useState<{isOpen: boolean, title: string, message: string, isDestructive?: boolean}>({ isOpen: false, title: '', message: '' });
+  const [confirmDialog, setConfirmDialog] = useState<{isOpen: boolean, title: string, message: string, isDestructive?: boolean, action?: () => void}>({ isOpen: false, title: '', message: '' });
 
   // Form states
   const [title, setTitle] = useState('');
@@ -28,6 +29,7 @@ export const AdminBooks: React.FC = () => {
   const [hasDigital, setHasDigital] = useState(false);
   const [description, setDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedPdfFile, setSelectedPdfFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [processState, setProcessState] = useState<ProcessState>('idle');
@@ -60,7 +62,6 @@ export const AdminBooks: React.FC = () => {
       return;
     }
 
-    // React Image Validation (Metadata + Actual Image Decoding)
     const result = await validateImage(file);
     if (!result.valid) {
       setValidationError(result.error);
@@ -69,10 +70,34 @@ export const AdminBooks: React.FC = () => {
       return;
     }
 
-    // Valid image selected
     setSelectedFile(file);
     const objectUrl = URL.createObjectURL(file);
     setImagePreview(objectUrl);
+  };
+
+  // Handle PDF File Selection
+  const handlePdfSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setValidationError(null);
+
+    if (!file) {
+      setSelectedPdfFile(null);
+      return;
+    }
+
+    if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
+      setValidationError('Selected file must be a valid PDF format (.pdf).');
+      setSelectedPdfFile(null);
+      return;
+    }
+
+    if (file.size > 50 * 1024 * 1024) {
+      setValidationError('PDF file size exceeds 50 MB limit.');
+      setSelectedPdfFile(null);
+      return;
+    }
+
+    setSelectedPdfFile(file);
   };
 
   // STEP-BY-STEP EXECUTION FLOW
@@ -83,10 +108,9 @@ export const AdminBooks: React.FC = () => {
       return;
     }
 
-    // Validate image if selected
     if (selectedFile) {
       setProcessState('validating');
-      setStatusMessage('Validating image format and content...');
+      setStatusMessage('Validating cover image format and content...');
       const check = await validateImage(selectedFile);
       if (!check.valid) {
         setValidationError(check.error);
@@ -96,11 +120,9 @@ export const AdminBooks: React.FC = () => {
     }
 
     try {
-      // -------------------------------------------------------------
-      // STEP 1: Send ONLY Book Information to Spring Boot -> PostgreSQL
-      // -------------------------------------------------------------
+      // STEP 1: Save Book Information to Spring Boot -> PostgreSQL
       setProcessState('saving-book');
-      setStatusMessage('Saving book information to database...');
+      setStatusMessage('Saving book information to PostgreSQL database...');
 
       const bookPayload: Partial<Book> = {
         title,
@@ -115,75 +137,69 @@ export const AdminBooks: React.FC = () => {
         hasDigital,
         description,
         coverColor: '#1e1b4b',
-        imageUrl: undefined, // Image URL starts as NULL/undefined
+        imageUrl: undefined,
       };
 
-      // Call Spring Boot API 1: POST /api/v1/books
       const saveResponse = await BookService.createBook(bookPayload);
       const newBookId = saveResponse.data.id;
       setSavedBookId(newBookId);
 
-      // If no image was selected, complete process immediately
-      if (!selectedFile) {
-        setProcessState('success');
-        setStatusMessage('Book saved successfully without image!');
-        resetForm();
-        return;
+      // STEP 2: Process PDF file if attached and hasDigital is enabled
+      if (hasDigital && selectedPdfFile) {
+        setProcessState('uploading-pdf');
+        setStatusMessage('Uploading e-Book PDF & storing in cloud storage and local cache...');
+        
+        const { pdfUrl } = await PdfStorageService.uploadAndCachePdf(selectedPdfFile, newBookId);
+
+        // Update database with clean PDF URL
+        await BookService.updateBookPdf(newBookId, pdfUrl);
       }
 
-      // -------------------------------------------------------------
-      // STEP 2: Upload Image Directly From React to Cloudinary
-      // -------------------------------------------------------------
-      setProcessState('uploading-image');
-      setStatusMessage('Uploading image directly to Cloudinary...');
 
-      const cloudinaryRes = await uploadImageToCloudinary(selectedFile, newBookId);
+      // STEP 3: Upload Image to Cloudinary if selected
+      if (selectedFile) {
+        setProcessState('uploading-image');
+        setStatusMessage('Uploading cover image to Cloudinary...');
 
-      // -------------------------------------------------------------
-      // STEP 3: Send Book ID + Cloudinary Image URL to Spring Boot
-      // -------------------------------------------------------------
-      setProcessState('updating-image-url');
-      setStatusMessage('Updating book image URL in database...');
+        const cloudinaryRes = await uploadImageToCloudinary(selectedFile, newBookId);
 
-      // Call Spring Boot API 2: PATCH /api/v1/books/{id}/image
-      await BookService.updateBookImage(
-        newBookId,
-        cloudinaryRes.secure_url,
-        cloudinaryRes.public_id
-      );
+        setProcessState('updating-image-url');
+        setStatusMessage('Updating book cover image URL in database...');
+
+        await BookService.updateBookImage(
+          newBookId,
+          cloudinaryRes.secure_url,
+          cloudinaryRes.public_id
+        );
+      }
 
       setProcessState('success');
-      setStatusMessage('Book created and image uploaded successfully!');
+      setStatusMessage('✓ Book record and digital files uploaded & saved successfully!');
       resetForm();
 
     } catch (err: any) {
       console.error('Book creation error:', err);
-      if (savedBookId && selectedFile) {
-        // Database save succeeded, but Cloudinary or URL update failed
+      if (savedBookId) {
         setProcessState('error');
-        setStatusMessage(
-          'Book information was saved, but the image upload failed. Please retry the image upload.'
-        );
+        setStatusMessage('Book saved in database, but file processing encountered an issue.');
       } else {
-        // Initial database save failed
         setProcessState('error');
         setValidationError(err.response?.data?.message || err.message || 'Database save failed.');
       }
     }
   };
 
-  // Retry Cloudinary Upload for preserved savedBookId
   const handleRetryImageUpload = async () => {
     if (!savedBookId || !selectedFile) return;
 
     try {
       setProcessState('uploading-image');
-      setStatusMessage('Retrying image upload to Cloudinary...');
+      setStatusMessage('Retrying image upload...');
 
       const cloudinaryRes = await uploadImageToCloudinary(selectedFile, savedBookId);
 
       setProcessState('updating-image-url');
-      setStatusMessage('Updating book image URL in database...');
+      setStatusMessage('Updating image URL in database...');
 
       await BookService.updateBookImage(
         savedBookId,
@@ -192,11 +208,20 @@ export const AdminBooks: React.FC = () => {
       );
 
       setProcessState('success');
-      setStatusMessage('Image uploaded and book record updated successfully!');
+      setStatusMessage('✓ Cover image uploaded successfully!');
       resetForm();
     } catch (err: any) {
       setProcessState('error');
       setStatusMessage('Image upload retry failed. Please try again.');
+    }
+  };
+
+  const handleDeleteBook = async (bookId: string, bookTitle: string) => {
+    try {
+      await BookService.deleteBook(bookId);
+      fetchBooks();
+    } catch (err) {
+      console.error("Failed to delete book:", err);
     }
   };
 
@@ -208,12 +233,14 @@ export const AdminBooks: React.FC = () => {
       setPublisher('');
       setDescription('');
       setSelectedFile(null);
+      setSelectedPdfFile(null);
       setImagePreview(null);
       setValidationError(null);
       setSavedBookId(null);
       setIsAddModalOpen(false);
       setProcessState('idle');
       setStatusMessage(null);
+      setHasDigital(false);
       fetchBooks();
     }, 1500);
   };
@@ -231,7 +258,7 @@ export const AdminBooks: React.FC = () => {
       <div className="admin-header">
         <div>
           <h1 className="admin-title">Book Catalog</h1>
-          <p className="admin-subtitle">Manage physical and digital books with Cloudinary direct image storage.</p>
+          <p className="admin-subtitle">Manage physical and digital e-books with image & PDF storage.</p>
         </div>
         <div className="admin-header-actions">
           <div className="admin-search">
@@ -314,7 +341,18 @@ export const AdminBooks: React.FC = () => {
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                      <Button size="sm" variant="outline" style={{ color: 'var(--danger-color)' }} onClick={() => setConfirmDialog({ isOpen: true, title: 'Delete Book', message: `Are you sure you want to delete "${book.title}"?`, isDestructive: true })}>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        style={{ color: 'var(--danger-color)' }} 
+                        onClick={() => setConfirmDialog({ 
+                          isOpen: true, 
+                          title: 'Delete Book', 
+                          message: `Are you sure you want to delete "${book.title}"?`, 
+                          isDestructive: true,
+                          action: () => handleDeleteBook(book.id, book.title)
+                        })}
+                      >
                         <i className="fas fa-trash"></i>
                       </Button>
                     </div>
@@ -326,7 +364,7 @@ export const AdminBooks: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Book Modal with Database-First Cloudinary Direct Upload Flow */}
+      {/* Add Book Modal with Image & PDF Upload Box */}
       <Modal 
         isOpen={isAddModalOpen} 
         onClose={() => { if (processState === 'idle' || processState === 'error') setIsAddModalOpen(false); }}
@@ -431,16 +469,60 @@ export const AdminBooks: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input type="checkbox" id="digital-copy" checked={hasDigital} onChange={(e) => setHasDigital(e.target.checked)} />
-            <label htmlFor="digital-copy" style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>Digital e-Book copy available</label>
+            <input 
+              type="checkbox" 
+              id="digital-copy" 
+              checked={hasDigital} 
+              onChange={(e) => setHasDigital(e.target.checked)} 
+            />
+            <label htmlFor="digital-copy" style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer' }}>
+              Digital e-Book copy available
+            </label>
           </div>
+
+          {/* Dynamic PDF Upload Box when Digital e-Book is checked */}
+          {hasDigital && (
+            <div style={{ 
+              padding: '14px', 
+              background: 'var(--bg-pale-green, rgba(82,122,90,0.08))', 
+              borderRadius: 'var(--radius-md)', 
+              border: '1px solid var(--status-success, #527A5A)', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '10px' 
+            }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                <i className="fas fa-file-pdf" style={{ color: '#e74c3c', marginRight: '6px' }}></i> Upload e-Book PDF File (.pdf - Max 50 MB)
+              </label>
+              <input 
+                type="file" 
+                accept="application/pdf" 
+                onChange={handlePdfSelect}
+                disabled={processState !== 'idle' && processState !== 'error'}
+                style={{ width: '100%', padding: '8px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'white' }}
+              />
+              {selectedPdfFile ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', color: 'var(--status-success)', fontWeight: 600 }}>
+                  <i className="fas fa-check-circle"></i>
+                  <span><strong>{selectedPdfFile.name}</strong> ({(selectedPdfFile.size / (1024 * 1024)).toFixed(2)} MB) — Ready to save & cache</span>
+                </div>
+              ) : (
+                <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  Select the e-book PDF file to attach to this book record for digital reading.
+                </p>
+              )}
+            </div>
+          )}
         </form>
       </Modal>
 
       <ConfirmationDialog 
         isOpen={confirmDialog.isOpen}
         onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
-        onConfirm={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        onConfirm={() => {
+          if (confirmDialog.action) confirmDialog.action();
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        }}
         title={confirmDialog.title}
         message={confirmDialog.message}
         isDestructive={confirmDialog.isDestructive}

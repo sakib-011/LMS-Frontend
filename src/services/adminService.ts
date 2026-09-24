@@ -91,4 +91,49 @@ export const AdminService = {
     const response = await apiClient.post('/admin/backup/trigger');
     return response.data;
   },
+
+  getReservations: async () => {
+    const response = await apiClient.get('/admin/reservations');
+    return response.data;
+  },
+
+  markReservationReady: async (id: string) => {
+    const response = await apiClient.put(`/admin/reservations/${id}/ready`);
+    return response.data;
+  },
+
+  checkoutReservation: async (id: string) => {
+    const response = await apiClient.post(`/admin/reservations/${id}/checkout`);
+    return response.data;
+  },
+
+  cancelReservation: async (id: string) => {
+    const response = await apiClient.delete(`/admin/reservations/${id}`);
+    return response.data;
+  },
+
+  updateReservationStatus: async (id: string, status: string) => {
+    const response = await apiClient.put(`/admin/reservations/${id}/status`, { status });
+    return response.data;
+  },
+
+  deleteReservationPermanently: async (id: string) => {
+    const response = await apiClient.delete(`/admin/reservations/${id}/permanent`);
+    return response.data;
+  },
+
+  getRequests: async () => {
+    const response = await apiClient.get('/admin/requests');
+    return response.data;
+  },
+
+  updateRequestStatus: async (id: string, status: string, notes?: string) => {
+    const response = await apiClient.put(`/admin/requests/${id}/status`, { status, notes });
+    return response.data;
+  },
+
+  deleteRequestPermanently: async (id: string) => {
+    const response = await apiClient.delete(`/admin/requests/${id}`);
+    return response.data;
+  },
 };

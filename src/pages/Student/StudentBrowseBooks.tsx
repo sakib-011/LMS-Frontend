@@ -1,7 +1,10 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Book } from '../../services/bookService';
+import { StudentService, ReservationItem } from '../../services/studentService';
 import { BookGridCard } from '../../components/ui/BookCard/BookGridCard';
+import { Modal, Button } from '../../components/ui';
+import { InventoryStorageService } from '../../utils/inventoryStorageService';
 import './StudentBrowseBooks.css';
 
 import { BookService } from '../../services/bookService';
@@ -19,6 +22,7 @@ type ExtBook = Book & { edition: string; gateScore: number; physicalStacks: stri
 
 export const StudentBrowseBooks: React.FC = () => {
   const [dbBooks, setDbBooks] = useState<Book[]>([]);
+  const [reservedBookIds, setReservedBookIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState('relevance');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -29,10 +33,26 @@ export const StudentBrowseBooks: React.FC = () => {
     BookService.getBooks()
       .then(res => {
         if (Array.isArray(res)) {
-          setDbBooks(res as any);
+          const visibleBooks = InventoryStorageService.filterBooksForStudents(res as any);
+          setDbBooks(visibleBooks);
         }
       })
       .catch(err => console.error("Failed to load db books:", err));
+
+    StudentService.getReservations()
+      .then(resList => {
+        if (Array.isArray(resList)) {
+          const set = new Set<string>();
+          resList.forEach(r => {
+            const bId = r.bookId || r.book?.id;
+            if (bId && (r.status === 'pending' || r.status === 'ready' || r.status === 'issued')) {
+              set.add(String(bId));
+            }
+          });
+          setReservedBookIds(set);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const activeCatalog = useMemo(() => {
@@ -332,8 +352,18 @@ export const StudentBrowseBooks: React.FC = () => {
         <div className={viewMode === 'grid' ? 'sbb-grid' : 'sbb-list'}>
           {paginated.map(book =>
             viewMode === 'grid'
-              ? <BookGridCard key={book.id} book={book} />
-              : <ListCard key={book.id} book={book} />
+              ? <BookGridCard 
+                  key={book.id} 
+                  book={book} 
+                  isReserved={reservedBookIds.has(String(book.id))}
+                  onReserveSuccess={() => setReservedBookIds(prev => new Set(prev).add(String(book.id)))}
+                />
+              : <ListCard 
+                  key={book.id} 
+                  book={book} 
+                  isReserved={reservedBookIds.has(String(book.id))}
+                  onReserveSuccess={() => setReservedBookIds(prev => new Set(prev).add(String(book.id)))}
+                />
           )}
         </div>
       )}
@@ -373,48 +403,154 @@ const CAT_COLORS: Record<string, string> = {
   'Arts': '#322659',
 };
 
-const ListCard: React.FC<{ book: ExtBook }> = ({ book }) => {
+const ListCard: React.FC<{ book: ExtBook; isReserved?: boolean; onReserveSuccess?: () => void }> = ({ book, isReserved = false, onReserveSuccess }) => {
   const color = CAT_COLORS[book.category] || '#6F6A64';
+  const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [isError, setIsError] = useState(false);
+  const [resItem, setResItem] = useState<ReservationItem | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const isBookReserved = isReserved || !!resItem;
+
+  const handleReadClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/student/reader/${book.id}`);
+  };
+
+  const handleReserveClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isBookReserved) {
+      setModalTitle('Already Reserved');
+      setModalMessage(`You have already placed a reservation for "${book.title}".`);
+      setIsError(false);
+      setModalOpen(true);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await StudentService.createReservation(book.id);
+      setResItem(res);
+      setIsError(false);
+      setModalTitle('Book Reserved Successfully!');
+      setModalMessage(`Your reservation request for "${book.title}" has been placed.`);
+      setModalOpen(true);
+      if (onReserveSuccess) onReserveSuccess();
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to submit reservation.';
+      setIsError(true);
+      setModalTitle('Reservation Status');
+      setModalMessage(errorMsg);
+      setModalOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Link to={`/student/books/${book.id}`} className="sbb-list-card">
-      <div className="sbb-list-cover" style={{ background: book.coverColor }}>
-        <i className="fas fa-book"></i>
-      </div>
-      <div className="sbb-list-info">
-        <div className="sbb-cat-chip sbb-cat-chip--sm" style={{ color, borderColor: `${color}55`, background: `${color}11` }}>
-          {book.category.toUpperCase()}
+    <>
+      <Link to={`/student/books/${book.id}`} className="sbb-list-card">
+        <div className="sbb-list-cover" style={{ background: book.coverColor }}>
+          <i className="fas fa-book"></i>
         </div>
-        <p className="sbb-card-title" style={{ fontSize: '1rem' }}>{book.title}</p>
-        <p className="sbb-card-author">{book.author} · {book.publisher} · {book.year}</p>
-        <p style={{ fontSize: '0.8125rem', color: 'var(--bg-secondary-text)', margin: '4px 0 0', lineHeight: 1.5 }}>
-          {book.description.substring(0, 140)}…
-        </p>
-      </div>
-      <div className="sbb-list-meta">
-        <div className="sbb-card-rating">
-          <i className="fas fa-star sbb-star"></i>
-          <strong>{book.rating}</strong>
-        </div>
-        <div className="sbb-avail-chip" style={{ marginTop: 4 }}>
-          <i className="fas fa-building"></i>
-          <span>{book.physicalAvailable > 0 ? `${book.physicalAvailable} available` : 'Checked out'}</span>
-        </div>
-        {book.hasDigital && (
-          <div className="sbb-avail-chip sbb-avail-chip--digital" style={{ marginTop: 4 }}>
-            <i className="fas fa-tablet-alt"></i><span>Digital</span>
+        <div className="sbb-list-info">
+          <div className="sbb-cat-chip sbb-cat-chip--sm" style={{ color, borderColor: `${color}55`, background: `${color}11` }}>
+            {book.category.toUpperCase()}
           </div>
-        )}
-        <div className="sbb-card-actions" style={{ marginTop: 12 }}>
-          {book.hasDigital && (
-            <button className="sbb-action-btn sbb-action-btn--read" onClick={e => e.preventDefault()}>
-              <i className="fas fa-book-open"></i> Read
-            </button>
-          )}
-          <button className="sbb-action-btn sbb-action-btn--reserve" onClick={e => e.preventDefault()}>
-            <i className="fas fa-bookmark"></i> Reserve
-          </button>
+          <p className="sbb-card-title" style={{ fontSize: '1rem' }}>{book.title}</p>
+          <p className="sbb-card-author">{book.author} · {book.publisher} · {book.year}</p>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--bg-secondary-text)', margin: '4px 0 0', lineHeight: 1.5 }}>
+            {book.description.substring(0, 140)}…
+          </p>
         </div>
-      </div>
-    </Link>
+        <div className="sbb-list-meta">
+          <div className="sbb-card-rating">
+            <i className="fas fa-star sbb-star"></i>
+            <strong>{book.rating}</strong>
+          </div>
+          <div className="sbb-avail-chip" style={{ marginTop: 4 }}>
+            <i className="fas fa-building"></i>
+            <span>{book.physicalAvailable > 0 ? `${book.physicalAvailable} available` : 'Checked out'}</span>
+          </div>
+          {book.hasDigital && (
+            <div className="sbb-avail-chip sbb-avail-chip--digital" style={{ marginTop: 4 }}>
+              <i className="fas fa-tablet-alt"></i><span>Digital</span>
+            </div>
+          )}
+          <div className="sbb-card-actions" style={{ marginTop: 12 }}>
+            {book.hasDigital && (
+              <button className="sbb-action-btn sbb-action-btn--read" onClick={handleReadClick}>
+                <i className="fas fa-book-open"></i> Read
+              </button>
+            )}
+            <button className={`sbb-action-btn ${isBookReserved ? 'sbb-action-btn--reserved' : 'sbb-action-btn--reserve'}`} onClick={handleReserveClick} disabled={loading}>
+              <i className={isBookReserved ? "fas fa-check" : "fas fa-bookmark"}></i> {loading ? 'Reserving...' : isBookReserved ? 'Reserved ✓' : 'Reserve'}
+            </button>
+          </div>
+        </div>
+      </Link>
+
+      <Modal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        title={modalTitle}
+        footer={
+          <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', width: '100%' }}>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>Close</Button>
+            {!isError && (
+              <Button variant="primary" onClick={() => { setModalOpen(false); navigate('/student/reservations'); }}>
+                View My Reservations
+              </Button>
+            )}
+          </div>
+        }
+      >
+        <div style={{ padding: 'var(--space-2) 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+            <div style={{ 
+              width: 50, height: 50, borderRadius: '50%', 
+              background: isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: isError ? '#EF4444' : '#10B981', fontSize: '1.5rem', flexShrink: 0
+            }}>
+              <i className={isError ? "fas fa-exclamation-circle" : "fas fa-check-circle"}></i>
+            </div>
+            <div>
+              <p style={{ margin: 0, fontWeight: 600, fontSize: '1rem', color: 'var(--text-primary)' }}>{modalMessage}</p>
+              {!isError && (
+                <p style={{ margin: '4px 0 0', fontSize: '0.875rem', color: 'var(--bg-secondary-text)' }}>
+                  You will be notified as soon as a physical copy is ready for pickup at the circulation desk.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {!isError && resItem && (
+            <div style={{ background: 'var(--bg-secondary)', padding: 'var(--space-4)', borderRadius: 'var(--radius-md)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', fontSize: '0.875rem' }}>
+              <div>
+                <span style={{ color: 'var(--bg-secondary-text)', display: 'block', fontSize: '0.75rem' }}>Queue Position</span>
+                <strong style={{ color: 'var(--bg-primary-text)' }}>#{resItem.queuePosition || 1} in line</strong>
+              </div>
+              <div>
+                <span style={{ color: 'var(--bg-secondary-text)', display: 'block', fontSize: '0.75rem' }}>Reserved Date</span>
+                <strong style={{ color: 'var(--bg-primary-text)' }}>{resItem.reservedDate || 'Today'}</strong>
+              </div>
+              <div>
+                <span style={{ color: 'var(--bg-secondary-text)', display: 'block', fontSize: '0.75rem' }}>Expiry Date</span>
+                <strong style={{ color: 'var(--bg-primary-text)' }}>{resItem.expiryDate || 'In 14 Days'}</strong>
+              </div>
+              <div>
+                <span style={{ color: 'var(--bg-secondary-text)', display: 'block', fontSize: '0.75rem' }}>Status</span>
+                <strong style={{ color: 'var(--bg-warm-orange, #f59e0b)' }}>Pending Queue</strong>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+    </>
   );
 };

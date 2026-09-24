@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BookCard } from '../../components/ui/BookCard/BookCard';
 import { Button } from '../../components/ui';
 import { BookService, Book } from '../../services/bookService';
+import { InventoryStorageService } from '../../utils/inventoryStorageService';
 import './Books.css';
 
 export const Books: React.FC = () => {
@@ -10,7 +11,10 @@ export const Books: React.FC = () => {
 
   useEffect(() => {
     BookService.getBooks()
-      .then(data => setBooks(data || []))
+      .then(data => {
+        const visible = InventoryStorageService.filterBooksForStudents(data || []);
+        setBooks(visible);
+      })
       .catch(() => setBooks([]));
   }, []);
 

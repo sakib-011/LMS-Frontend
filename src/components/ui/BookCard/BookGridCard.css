@@ -176,3 +176,9 @@
   color: white;
 }
 .sbb-action-btn--reserve:hover { background: var(--bg-warm-orange); }
+.sbb-action-btn--reserved {
+  background: var(--bg-warm-orange, #f28c28);
+  color: white;
+  border: 1px solid var(--bg-warm-orange, #f28c28);
+}
+.sbb-action-btn--reserved:hover { opacity: 0.9; }

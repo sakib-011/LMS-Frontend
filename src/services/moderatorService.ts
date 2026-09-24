@@ -47,8 +47,13 @@ export const ModeratorService = {
     return response.data;
   },
 
-  issueBook: async (studentEmail: string, bookId: string) => {
-    const response = await apiClient.post('/moderator/borrowing/issue', { studentEmail, bookId });
+  issueBook: async (studentEmail: string, bookId: string, dueDate?: string) => {
+    const response = await apiClient.post('/moderator/borrowing/issue', { studentEmail, bookId, dueDate });
+    return response.data;
+  },
+
+  renewBorrowing: async (borrowingId: string, dueDate?: string) => {
+    const response = await apiClient.put(`/moderator/borrowing/${borrowingId}/renew`, { dueDate });
     return response.data;
   },
 
@@ -87,13 +92,38 @@ export const ModeratorService = {
     return response.data;
   },
 
+  checkoutReservation: async (id: string) => {
+    const response = await apiClient.post(`/moderator/reservations/${id}/checkout`);
+    return response.data;
+  },
+
+  cancelReservation: async (id: string) => {
+    const response = await apiClient.delete(`/moderator/reservations/${id}`);
+    return response.data;
+  },
+
+  updateReservationStatus: async (id: string, status: string) => {
+    const response = await apiClient.put(`/moderator/reservations/${id}/status`, { status });
+    return response.data;
+  },
+
+  deleteReservationPermanently: async (id: string) => {
+    const response = await apiClient.delete(`/moderator/reservations/${id}/permanent`);
+    return response.data;
+  },
+
   getRequests: async () => {
     const response = await apiClient.get<BookRequestItem[]>('/moderator/requests');
     return response.data;
   },
 
-  updateRequestStatus: async (id: string, status: 'approved' | 'rejected', notes?: string) => {
+  updateRequestStatus: async (id: string, status: string, notes?: string) => {
     const response = await apiClient.put<BookRequestItem>(`/moderator/requests/${id}/status`, { status, notes });
+    return response.data;
+  },
+
+  deleteRequestPermanently: async (id: string) => {
+    const response = await apiClient.delete(`/moderator/requests/${id}`);
     return response.data;
   },
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input, Select } from '../../components/ui';
 import { apiClient } from '../../services/api';
+import { ALL_DEPARTMENTS } from '../../utils/departments';
 import './Auth.css';
 
 export const Register: React.FC = () => {
@@ -14,6 +15,7 @@ export const Register: React.FC = () => {
     password: '',
     confirmPassword: ''
   });
+  const [customDepartment, setCustomDepartment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -31,14 +33,22 @@ export const Register: React.FC = () => {
       return;
     }
 
+    const finalDepartment = formData.department === 'Other' ? (customDepartment.trim() || 'General Studies') : formData.department;
+
+    if (!finalDepartment) {
+      setError("Please select or specify your department");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       await apiClient.post('/auth/register', {
         name: formData.fullName,
+        studentId: formData.studentId,
         email: formData.email,
         password: formData.password,
-        department: formData.department,
+        department: finalDepartment,
         phone: formData.phone
       });
 
@@ -49,6 +59,11 @@ export const Register: React.FC = () => {
       setError(err?.response?.data?.message || err?.response?.data || err?.message || 'Registration failed');
     }
   };
+
+  const departmentOptions = [
+    { label: 'Select Department...', value: '' },
+    ...ALL_DEPARTMENTS.map(dept => ({ label: dept, value: dept }))
+  ];
 
   return (
     <div className="bg-auth-card">
@@ -109,14 +124,20 @@ export const Register: React.FC = () => {
           value={formData.department}
           onChange={handleChange}
           required
-          options={[
-            { label: 'Select Department...', value: '' },
-            { label: 'Computer Science', value: 'cs' },
-            { label: 'Engineering', value: 'eng' },
-            { label: 'Business', value: 'bus' },
-            { label: 'Arts & Humanities', value: 'arts' }
-          ]}
+          options={departmentOptions}
         />
+
+        {formData.department === 'Other' && (
+          <Input 
+            name="customDepartment"
+            label="Custom Department Name"
+            placeholder="e.g. Artificial Intelligence & Data Science"
+            value={customDepartment}
+            onChange={(e) => setCustomDepartment(e.target.value)}
+            icon="fas fa-building"
+            required
+          />
+        )}
         
         <Input 
           name="password"

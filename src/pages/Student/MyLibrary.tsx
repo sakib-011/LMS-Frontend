@@ -41,8 +41,11 @@ export const MyLibrary: React.FC = () => {
               key={b.id} 
               book={b.book || { title: 'Borrowed Book', author: 'Catalog', coverColor: '#2D3748' } as any}
               showAvailability={false}
-              topRightBadge={b.isOverdue ? <div className="sbb-edition-badge" style={{ color: 'var(--bg-error)', fontWeight: 800 }}>OVERDUE</div> : undefined}
-              actionSlot={<Button size="sm" variant="outline" style={{ width: '100%' }}>Renew</Button>}
+              actionSlot={
+                <div style={{ width: '100%', textAlign: 'center', fontSize: '0.7rem', color: 'var(--bg-secondary-text)', padding: '4px 0' }}>
+                  <i className="fas fa-building"></i> Renew offline at circulation desk
+                </div>
+              }
             >
               <div style={{ padding: '6px 10px 10px' }}>
                 <div className="std-progress-bar">

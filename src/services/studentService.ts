@@ -25,12 +25,13 @@ export type BorrowedBookItem = BorrowingItem;
 
 export interface ReservationItem {
   id: string;
+  bookId?: string;
   book: Book;
   reservedDate: string;
   expiryDate?: string;
   pickupDeadline?: string;
   queuePosition: number;
-  status: 'pending' | 'ready' | 'fulfilled' | 'cancelled';
+  status: 'pending' | 'ready' | 'fulfilled' | 'cancelled' | 'cancelled_by_admin' | 'issued';
 }
 
 export interface BookRequestItem {

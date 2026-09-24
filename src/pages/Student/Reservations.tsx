@@ -58,10 +58,20 @@ export const Reservations: React.FC = () => {
               key={res.id} 
               book={res.book || { title: 'Reserved Book', author: 'Library Catalog', coverColor: '#2D3748' } as any}
               showAvailability={false}
-              topRightBadge={res.status === 'ready' ? <div className="sbb-edition-badge" style={{ color: 'var(--bg-success)' }}>READY</div> : <div className="sbb-edition-badge">Queue #{res.queuePosition || 1}</div>}
-              actionSlot={res.status !== 'ready' && res.status !== 'cancelled' ? (
+              topRightBadge={
+                res.status === 'ready' ? <div className="sbb-edition-badge" style={{ color: 'var(--bg-success)', fontWeight: 'bold' }}>READY</div> :
+                res.status === 'cancelled_by_admin' ? <div className="sbb-edition-badge" style={{ color: 'var(--bg-error)', fontWeight: 'bold' }}>REMOVED BY ADMIN</div> :
+                res.status === 'cancelled' ? <div className="sbb-edition-badge" style={{ color: 'var(--bg-secondary-text)' }}>CANCELLED</div> :
+                res.status === 'fulfilled' ? <div className="sbb-edition-badge" style={{ color: '#3b82f6', fontWeight: 'bold' }}>LOAN ACTIVE</div> :
+                <div className="sbb-edition-badge">Queue #{res.queuePosition || 1}</div>
+              }
+              actionSlot={
+                res.status === 'ready' ? <Badge variant="success">Ready for Pickup</Badge> :
+                res.status === 'cancelled_by_admin' ? <Badge variant="error">Cancelled by Admin</Badge> :
+                res.status === 'cancelled' ? <Badge variant="neutral">Cancelled by You</Badge> :
+                res.status === 'fulfilled' ? <Badge variant="primary">Loan Active</Badge> :
                 <Button size="sm" variant="danger" style={{ width: '100%' }} onClick={() => handleCancel(res.id)}>Cancel</Button>
-              ) : <span />}
+              }
             />
           ))}
         </div>
@@ -69,7 +79,7 @@ export const Reservations: React.FC = () => {
         <div className="std-books-table">
         {reservations.map(res => (
           <div key={res.id} className="std-list-card" style={{
-            borderColor: res.status === 'ready' ? 'var(--bg-success)' : undefined
+            borderColor: res.status === 'ready' ? 'var(--bg-success)' : res.status === 'cancelled_by_admin' ? 'var(--bg-error)' : undefined
           }}>
             <div className="std-list-book-cover" style={{ background: res.book?.coverColor || '#2D3748' }}>
               <i className="fas fa-book"></i>
@@ -81,7 +91,7 @@ export const Reservations: React.FC = () => {
                 <span style={{ fontSize: '0.8125rem', color: 'var(--bg-secondary-text)' }}>
                   <i className="fas fa-calendar"></i> Reserved: {res.reservedDate || 'Today'}
                 </span>
-                {res.status !== 'ready' && (
+                {res.status === 'pending' && (
                   <span style={{ fontSize: '0.8125rem', color: 'var(--bg-secondary-text)' }}>
                     <i className="fas fa-users"></i> Queue position: #{res.queuePosition || 1}
                   </span>
@@ -91,13 +101,20 @@ export const Reservations: React.FC = () => {
                     <i className="fas fa-map-marker-alt"></i> Pickup by: {res.pickupDeadline}
                   </span>
                 )}
+                {res.status === 'cancelled_by_admin' && (
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--bg-error)', fontWeight: 600 }}>
+                    <i className="fas fa-exclamation-circle"></i> Cancelled by library admin
+                  </span>
+                )}
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 'var(--space-2)', flexShrink: 0 }}>
               {res.status === 'ready' && <Badge variant="success">Ready for Pickup</Badge>}
               {res.status === 'pending' && <Badge variant="neutral">In Queue</Badge>}
-              {res.status === 'cancelled' && <Badge variant="error">Cancelled</Badge>}
-              {res.status !== 'ready' && res.status !== 'cancelled' && (
+              {res.status === 'cancelled_by_admin' && <Badge variant="error">Cancelled by Admin</Badge>}
+              {res.status === 'cancelled' && <Badge variant="neutral">Cancelled</Badge>}
+              {res.status === 'fulfilled' && <Badge variant="primary">Loan Active</Badge>}
+              {res.status === 'pending' && (
                 <Button size="sm" variant="danger" onClick={() => handleCancel(res.id)}>Cancel</Button>
               )}
             </div>

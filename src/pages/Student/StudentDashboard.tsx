@@ -5,6 +5,7 @@ import { BookGridCard } from '../../components/ui/BookCard/BookGridCard';
 import { useAuth } from '../../context/AuthContext';
 import { apiClient } from '../../services/api';
 import { BookService, Book } from '../../services/bookService';
+import { InventoryStorageService } from '../../utils/inventoryStorageService';
 import '../../layouts/StudentLayout.css';
 import './Student.css';
 
@@ -17,6 +18,9 @@ interface DashboardStats {
   recentBorrowings: any[];
 }
 
+import { StudentService } from '../../services/studentService';
+import { BorrowingStorageService } from '../../utils/borrowingStorageService';
+
 export const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -27,24 +31,36 @@ export const StudentDashboard: React.FC = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [dashRes, digitalRes, borrowRes, booksRes] = await Promise.all([
-          apiClient.get<DashboardStats>('/student/dashboard').catch(() => null),
-          apiClient.get<any[]>('/student/digital-library').catch(() => ({ data: [] })),
-          apiClient.get<any[]>('/student/borrowings').catch(() => ({ data: [] })),
+        const studentIdentifier = user?.email || user?.id || 'STU-2024-1440';
+        const localActive = BorrowingStorageService.getStudentActiveBorrowings(studentIdentifier);
+
+        const [dashData, digitalData, borrowData, booksData] = await Promise.all([
+          StudentService.getDashboard().catch(() => null),
+          StudentService.getDigitalLibrary().catch(() => []),
+          StudentService.getBorrowings().catch(() => []),
           BookService.getBooks().catch(() => [])
         ]);
 
-        if (dashRes && dashRes.data) {
-          setStats(dashRes.data);
+        if (dashData) {
+          setStats(dashData);
         }
-        if (digitalRes && digitalRes.data) {
-          setDigitalBooks(digitalRes.data);
+        if (Array.isArray(digitalData)) {
+          setDigitalBooks(digitalData);
         }
-        if (borrowRes && borrowRes.data) {
-          setBorrowings(borrowRes.data);
+
+        const map = new Map<string, any>();
+        localActive.forEach(b => map.set(b.id, b));
+        if (Array.isArray(borrowData)) {
+          borrowData.filter((b: any) => b.status !== 'RETURNED').forEach((b: any) => {
+            const id = b.id || b.book?.id;
+            if (!map.has(id)) map.set(id, b);
+          });
         }
-        if (Array.isArray(booksRes)) {
-          setRecommendedBooks(booksRes.slice(0, 6));
+        setBorrowings(Array.from(map.values()));
+
+        if (Array.isArray(booksData)) {
+          const visible = InventoryStorageService.filterBooksForStudents(booksData);
+          setRecommendedBooks(visible.slice(0, 6));
         }
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
@@ -52,7 +68,7 @@ export const StudentDashboard: React.FC = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [user]);
 
   const studentFirstName = user?.name ? user.name.split(' ')[0] : 'Student';
   const overdueCount = borrowings.filter(b => b.isOverdue || b.status === 'OVERDUE').length;
@@ -67,7 +83,7 @@ export const StudentDashboard: React.FC = () => {
 
       {/* Stat Cards */}
       <div className="std-stats-grid">
-        <StatCard title="Currently Borrowed" value={stats?.currentlyBorrowed ?? 0} icon="fas fa-book-reader" to="/student/library" />
+        <StatCard title="Currently Borrowed" value={borrowings.length} icon="fas fa-book-reader" to="/student/library" />
         <StatCard title="Reserved Books" value={stats?.pendingReservations ?? 0} icon="fas fa-calendar-check" to="/student/reservations" />
         <StatCard title="Pending Requests" value={stats?.activeRequests ?? 0} icon="fas fa-paper-plane" to="/student/requests" />
         <StatCard title="Overdue Loans" value={overdueCount} icon="fas fa-exclamation-triangle" to="/student/library" />

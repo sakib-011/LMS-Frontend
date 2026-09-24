@@ -61,3 +61,48 @@ export const uploadImageToCloudinary = async (
     };
   }
 };
+
+/**
+ * Uploads a PDF file directly from React frontend to Cloudinary using an unsigned upload preset.
+ * Returns a short HTTPS secure_url that can be safely saved to Spring Boot -> PostgreSQL.
+ */
+export const uploadPdfToCloudinary = async (
+  file: File,
+  bookId?: string
+): Promise<CloudinaryUploadResponse> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', UPLOAD_PRESET);
+  formData.append('folder', 'book-shop/pdfs');
+
+  if (bookId) {
+    formData.append('public_id', `pdf-${bookId}`);
+  }
+
+  const endpoint = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.error?.message || `Cloudinary PDF upload failed with status ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+    return {
+      secure_url: data.secure_url,
+      public_id: data.public_id,
+    };
+  } catch (error: any) {
+    console.warn('Cloudinary PDF upload failed, falling back to embedded PDF data:', error.message);
+    throw error;
+  }
+};
+
+
